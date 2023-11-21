@@ -1,6 +1,7 @@
 ﻿{
   "$schema": "https://json.schemastore.org/launchsettings.json",
   "iisSettings": {
+    "hotReloadEnabled": false,
     "windowsAuthentication": false,
     "anonymousAuthentication": true,
     "iisExpress": {
