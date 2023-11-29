@@ -5,7 +5,7 @@ import { take } from 'rxjs';
 import { User } from 'src/app/_models/User';
 import { Member } from 'src/app/_models/member';
 import { AccountService } from 'src/app/_services/account.service';
-import { MembersService } from 'src/app/_services/members.service';
+import { MembersService } from 'src/app/_services/MembersService';
 
 @Component({
   selector: 'app-member-edit',

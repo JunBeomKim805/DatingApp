@@ -1,5 +1,6 @@
 using API.DTOs;
 using API.Entities;
+using API.Helper;
 using API.Interface;
 using AutoMapper;
 using AutoMapper.QueryableExtensions;
@@ -25,11 +26,27 @@ namespace API.Data
                 .SingleOrDefaultAsync();
         }
 
-        public async Task<IEnumerable<MemberDto>> GetMembersAsync()
+        public async Task<PagedList<MemberDto>> GetMembersAsync(UserParams userParams)
         {
-            return await _context.Users
-                .ProjectTo<MemberDto>(_mapper.ConfigurationProvider)
-                .ToListAsync();
+            var qeury = _context.Users.AsQueryable();
+
+            qeury = qeury.Where(u => u.UserName != userParams.CurrentUsername);
+            qeury = qeury.Where(u => u.Gender == userParams.Gender);
+            
+            var minDob = DateOnly.FromDateTime(DateTime.Today.AddYears(-userParams.MaxAge - 1));
+            var maxDob = DateOnly.FromDateTime(DateTime.Today.AddYears(-userParams.MinAge));
+
+            qeury = qeury.Where(u => u.DateOfBirth >= minDob && u.DateOfBirth <= maxDob);
+            qeury = userParams.OrderBy switch
+            {
+                "created" => qeury.OrderByDescending(u => u.Created),
+                _ => qeury.OrderByDescending(u => u.LastActive)
+            };
+
+            return await PagedList<MemberDto>.CreateAsync(
+                qeury.AsNoTracking().ProjectTo<MemberDto>(_mapper.ConfigurationProvider), 
+                userParams.PageNumber, 
+                userParams.PageSize);
         }
 
 
@@ -48,6 +65,8 @@ namespace API.Data
         public async Task<IEnumerable<AppUser>> GetUsersAsync()
         {
             return await _context.Users
+                .Take(4)
+                .Skip(4)
                 .Include(p =>p.Photos)
                 .ToListAsync();
         }
